@@ -1,0 +1,64 @@
+,<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hva koster strømmen - time for time</title>
+    <style>
+      table {
+        border: 1px solid hotpink;
+      }
+      td {
+        width: 180px;
+        border-left: 1px solid hotpink;
+        background-color: lightpink;
+        font-size: x-large;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+
+    <script>
+      const app = document.getElementById("app");
+      let today = new Date();
+      let date = String(today.getDate()).padStart(2, "0");
+      let month = String(today.getMonth() + 1).padStart(2, "0");
+      let year = today.getFullYear();
+      let apiCalLString = `https://www.hvakosterstrommen.no/api/v1/prices/${year}/${month}-${date}_NO2.json`;
+      let apiData = [];
+
+      getAPIdata();
+      function drawHTML() {
+        let html = `<h1>Strømprisen i dag: ${date}.${month}</h1>`;
+        for (let item of apiData) {
+          let shortPrice = item.NOK_per_kWh.toFixed(2);
+          html += `
+          <table>
+           <td> Kl: ${item.time_start.substring(11, 16)} </td>
+           <td> Pris:  ${shortPrice} kr </td>
+          </table>
+          `;
+
+          app.innerHTML = html;
+        }
+      }
+      function getAPIdata() {
+        fetch(apiCalLString)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            apiData.push(...data);
+            drawHTML();
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }
+    </script>
+  </body>
+</html>
